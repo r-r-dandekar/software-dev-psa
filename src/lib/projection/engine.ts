@@ -101,3 +101,57 @@ export function effectiveHoursPerWeek(input: {
 }): number {
   return input.devs * input.hoursPerWeekPerDev * (input.utilizationPct / 100);
 }
+
+// ---------------------------------------------------------------------------
+// Delivery Risk (Step 4): the SAME engine fed with live velocity (D12).
+// ---------------------------------------------------------------------------
+
+/** Observed delivery rate: completed (weighted) hours per calendar week. */
+export function velocityPerWeek(completedHours: number, elapsedDays: number): number {
+  if (elapsedDays <= 0) return 0;
+  return completedHours / (elapsedDays / 7);
+}
+
+/** Hours/week needed from now to hit the target date. */
+export function requiredVelocityPerWeek(
+  remainingHours: number,
+  asOf: string,
+  target: string
+): number {
+  const daysLeft = daysBetween(asOf, target);
+  if (daysLeft <= 0) return remainingHours > 0 ? Infinity : 0;
+  return remainingHours / (daysLeft / 7);
+}
+
+/** Project remaining work from current velocity to a completion point. */
+export function projectFromVelocity(
+  remainingHours: number,
+  velPerWeek: number,
+  asOf: string
+): ProjectionPoint {
+  return point(remainingHours, velPerWeek, asOf);
+}
+
+/**
+ * On-time probability (0–100) from the ratio of actual to required velocity,
+ * via a logistic centred at ratio=1 (exactly on pace ≈ 50%). Deterministic.
+ */
+export function onTimeProbability(
+  actualVel: number,
+  requiredVel: number
+): number {
+  if (requiredVel === Infinity) return 0; // target already passed, work remains
+  if (requiredVel <= 0) return 100; // nothing required
+  if (actualVel <= 0) return 0;
+  const ratio = actualVel / requiredVel;
+  const p = 100 / (1 + Math.exp(-4 * (ratio - 1)));
+  return Math.round(Math.max(0, Math.min(100, p)));
+}
+
+export type Rag = "green" | "amber" | "red";
+
+export function rag(probability: number, threshold = 75): Rag {
+  if (probability >= threshold) return "green";
+  if (probability >= threshold - 25) return "amber";
+  return "red";
+}

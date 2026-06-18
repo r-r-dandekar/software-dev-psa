@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Search, LogOut } from "lucide-react";
+import { Bell, Search, LogOut, Check, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { signOut } from "@/app/login/actions";
+import { markReadAction, markAllReadAction } from "@/app/notifications-actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,39 +64,56 @@ export function AppTopbar({
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <div className="px-2 py-1.5 text-sm font-semibold">
-              Notifications
+            <div className="flex items-center justify-between px-2 py-1.5">
+              <span className="text-sm font-semibold">Notifications</span>
+              {notifications.length > 0 ? (
+                <form action={markAllReadAction}>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <CheckCheck className="size-3.5" /> Mark all as done
+                  </button>
+                </form>
+              ) : null}
             </div>
             <DropdownMenuSeparator />
             {notifications.length === 0 ? (
               <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                No notifications yet.
+                You&apos;re all caught up.
               </div>
             ) : (
               <div className="max-h-80 overflow-y-auto">
-                {notifications.slice(0, 12).map((n) => {
-                  const inner = (
-                    <div
-                      className={`rounded-md px-2 py-2 text-sm ${
-                        n.read_at ? "opacity-60" : ""
-                      }`}
-                    >
-                      <div className="font-medium">{n.title}</div>
-                      {n.body ? (
-                        <div className="text-xs text-muted-foreground">
-                          {n.body}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                  return n.link ? (
-                    <Link key={n.id} href={n.link} className="block hover:bg-muted">
-                      {inner}
-                    </Link>
-                  ) : (
-                    <div key={n.id}>{inner}</div>
-                  );
-                })}
+                {notifications.slice(0, 12).map((n) => (
+                  <div key={n.id} className="flex items-start gap-1 rounded-md px-2 py-2 hover:bg-muted">
+                    {n.link ? (
+                      <Link href={n.link} className="min-w-0 flex-1">
+                        <div className="text-sm font-medium">{n.title}</div>
+                        {n.body ? (
+                          <div className="text-xs text-muted-foreground">{n.body}</div>
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium">{n.title}</div>
+                        {n.body ? (
+                          <div className="text-xs text-muted-foreground">{n.body}</div>
+                        ) : null}
+                      </div>
+                    )}
+                    <form action={markReadAction}>
+                      <input type="hidden" name="id" value={n.id} />
+                      <button
+                        type="submit"
+                        aria-label="Mark as done"
+                        title="Mark as done"
+                        className="rounded p-1 text-muted-foreground hover:bg-background hover:text-foreground"
+                      >
+                        <Check className="size-3.5" />
+                      </button>
+                    </form>
+                  </div>
+                ))}
               </div>
             )}
           </DropdownMenuContent>

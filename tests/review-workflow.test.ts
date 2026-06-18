@@ -12,6 +12,7 @@ function makeDeps(initial: ArtifactRef) {
   const artifact = { ...initial };
   const events: { type: string; actorId: string }[] = [];
   const notified: { userIds: string[]; title: string }[] = [];
+  const cleared: boolean[] = [];
 
   const deps: ReviewDeps = {
     async getArtifact(id) {
@@ -29,6 +30,9 @@ function makeDeps(initial: ArtifactRef) {
     async notify(userIds, n) {
       notified.push({ userIds, title: n.title });
     },
+    async clearArtifactNotifications() {
+      cleared.push(true);
+    },
     requiredApprovers() {
       return ["pm", "admin"];
     },
@@ -36,7 +40,7 @@ function makeDeps(initial: ArtifactRef) {
       return ["approver-1", "approver-2"];
     },
   };
-  return { deps, artifact, events, notified };
+  return { deps, artifact, events, notified, cleared };
 }
 
 const base: ArtifactRef = {
@@ -86,6 +90,8 @@ describe("review workflow orchestrator", () => {
     });
     expect(r).toEqual({ ok: true, status: "approved" });
     expect(ctx.events.map((e) => e.type)).toContain("artifact.approve");
+    // handled → related notifications auto-cleared
+    expect(ctx.cleared).toHaveLength(1);
   });
 
   it("locks only an approved artifact, by an authorized role", async () => {

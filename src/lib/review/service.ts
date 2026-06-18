@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth";
 import { emitEvent } from "@/lib/events/bus";
-import { notifyUsers } from "@/lib/notifications/repo";
+import { notifyUsers, markArtifactNotificationsRead } from "@/lib/notifications/repo";
 import { getArtifact, setReviewStatus, lockArtifact } from "@/lib/artifacts/store";
 import {
   performReviewAction,
@@ -59,6 +59,9 @@ function buildDeps(): ReviewDeps {
     },
     async notify(userIds, n) {
       await notifyUsers(userIds, n);
+    },
+    async clearArtifactNotifications(artifactId) {
+      await markArtifactNotificationsRead(artifactId);
     },
     requiredApprovers,
     listApprovers,

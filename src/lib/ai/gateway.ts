@@ -1,6 +1,15 @@
 import { generateText, generateObject, embed, embedMany } from "ai";
 import type { z } from "zod";
-import { getModel, getEmbeddingModel } from "./config";
+import { getModel, getEmbeddingModel, EMBEDDING_DIMENSIONS } from "./config";
+
+// gemini-embedding-001 defaults to 3072 dims; pin to our column size. Cosine
+// similarity is scale-invariant, so reduced dimensions are fine for retrieval.
+const docOpts = {
+  google: { outputDimensionality: EMBEDDING_DIMENSIONS, taskType: "RETRIEVAL_DOCUMENT" },
+};
+const queryOpts = {
+  google: { outputDimensionality: EMBEDDING_DIMENSIONS, taskType: "RETRIEVAL_QUERY" },
+};
 
 /**
  * The single entry point for all model calls (D16). Feature modules call this
@@ -48,7 +57,11 @@ export async function completeStructured<T>(input: {
 
 /** Embed a single string (e.g. a search query). */
 export async function embedText(text: string): Promise<number[]> {
-  const { embedding } = await embed({ model: getEmbeddingModel(), value: text });
+  const { embedding } = await embed({
+    model: getEmbeddingModel(),
+    value: text,
+    providerOptions: queryOpts,
+  });
   return embedding;
 }
 
@@ -58,6 +71,7 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   const { embeddings } = await embedMany({
     model: getEmbeddingModel(),
     values: texts,
+    providerOptions: docOpts,
   });
   return embeddings;
 }

@@ -44,7 +44,7 @@ export function getModel(): LanguageModel {
 // an embedding-capable provider (Gemini's free tier by default), independent of
 // AI_PROVIDER. text-embedding-004 → 768 dims (matches the kb_chunks column).
 const EMBEDDING_PROVIDER = process.env.AI_EMBEDDING_PROVIDER ?? "google";
-const EMBEDDING_MODEL = process.env.AI_EMBEDDING_MODEL ?? "text-embedding-004";
+const EMBEDDING_MODEL = process.env.AI_EMBEDDING_MODEL ?? "gemini-embedding-001";
 export const EMBEDDING_DIMENSIONS = 768;
 
 export function getEmbeddingModel() {

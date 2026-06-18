@@ -17,6 +17,9 @@ export type ArtifactSection = {
 
 export type ArtifactContent = {
   sections: ArtifactSection[];
+  /** Optional structured payload for artifact types that need it (e.g. code
+   *  review findings). `sections` remains the human/KB-readable projection. */
+  data?: Record<string, unknown>;
 };
 
 /** Versions are 1-based; the first snapshot is version 1. */
@@ -46,6 +49,7 @@ export function replaceSectionBody(
     throw new Error(`Unknown section: ${key}`);
   }
   return {
+    ...content,
     sections: content.sections.map((s) =>
       s.key === key ? { ...s, body } : s
     ),

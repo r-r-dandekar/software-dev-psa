@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireProfile } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { emitEvent } from "@/lib/events/bus";
 import { notifyUsers } from "@/lib/notifications/repo";
 import { updateIntegration } from "@/lib/delivery/repo";
@@ -53,8 +53,10 @@ export async function syncNowAction(formData: FormData) {
 
     // Proactive at-risk alert: notify approvers + emit event.
     if (risk.probability !== null && risk.probability < RISK_THRESHOLD) {
-      const supabase = await createClient();
-      const { data } = await supabase
+      // Service-role: this system notification must reach all PMs/Admins
+      // regardless of the acting user's row-level read permissions.
+      const admin = createAdminClient();
+      const { data } = await admin
         .from("profiles")
         .select("id")
         .overlaps("roles", ["pm", "admin"]);

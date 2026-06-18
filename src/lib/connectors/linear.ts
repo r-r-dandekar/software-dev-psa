@@ -57,7 +57,10 @@ export function createLinearConnector(): IssueConnector {
          }`,
         { input: { teamId, title, description } }
       );
-      if (!data.issueCreate.success) throw new Error("Linear issueCreate failed");
+      // A mutation can return no top-level errors yet still produce no issue.
+      if (!data.issueCreate?.success || !data.issueCreate.issue) {
+        throw new Error("Linear issueCreate failed (no issue returned)");
+      }
       return { id: data.issueCreate.issue.id, key: data.issueCreate.issue.identifier };
     },
 

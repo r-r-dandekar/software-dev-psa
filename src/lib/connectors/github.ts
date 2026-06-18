@@ -22,12 +22,44 @@ async function gh<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function ghDiff(path: string): Promise<string> {
+  const token = process.env.GITHUB_TOKEN;
+  if (!token) throw new Error("GITHUB_TOKEN is not set");
+  const res = await fetch(`${API}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github.v3.diff",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "psa-software",
+    },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`GitHub API ${res.status} (diff)`);
+  return res.text();
+}
+
 export type GitHubActivity = { commits: RawCommit[]; prs: RawPR[] };
+
+export type PullRequestDetail = {
+  number: number;
+  title: string;
+  body: string;
+  diff: string;
+};
 
 export type GitHubConnector = {
   readonly provider: "github";
   validateRepo(owner: string, repo: string): Promise<boolean>;
   getActivity(owner: string, repo: string, sinceIso: string): Promise<GitHubActivity>;
+  listOpenPullRequests(
+    owner: string,
+    repo: string
+  ): Promise<{ number: number; title: string }[]>;
+  getPullRequest(
+    owner: string,
+    repo: string,
+    number: number
+  ): Promise<PullRequestDetail>;
 };
 
 export function createGitHubConnector(): GitHubConnector {
@@ -78,6 +110,21 @@ export function createGitHubConnector(): GitHubConnector {
         }));
 
       return { commits, prs };
+    },
+
+    async listOpenPullRequests(owner, repo) {
+      const prs = await gh<{ number: number; title: string }[]>(
+        `/repos/${owner}/${repo}/pulls?state=open&per_page=50`
+      );
+      return prs.map((p) => ({ number: p.number, title: p.title }));
+    },
+
+    async getPullRequest(owner, repo, number) {
+      const meta = await gh<{ title: string; body: string | null }>(
+        `/repos/${owner}/${repo}/pulls/${number}`
+      );
+      const diff = await ghDiff(`/repos/${owner}/${repo}/pulls/${number}`);
+      return { number, title: meta.title, body: meta.body ?? "", diff };
     },
   };
 }

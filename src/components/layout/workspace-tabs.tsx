@@ -13,6 +13,7 @@ export function WorkspaceTabs({ projectId }: { projectId: string }) {
     { label: "Timeline", href: `/projects/${projectId}/timeline` },
     { label: "Delivery", href: `/projects/${projectId}/delivery` },
     { label: "Status", href: `/projects/${projectId}/status` },
+    { label: "Code Review", href: `/projects/${projectId}/review` },
   ];
 
   return (

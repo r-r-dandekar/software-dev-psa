@@ -79,6 +79,46 @@ export type ArtifactVersion = {
   created_at: string;
 };
 
+export type Feature = {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaskDiscipline = "frontend" | "backend" | "qa" | "pm";
+export type TaskUncertainty = "low" | "medium" | "high";
+
+export type Task = {
+  id: string;
+  project_id: string;
+  feature_id: string | null;
+  title: string;
+  discipline: TaskDiscipline;
+  min_hours: number;
+  max_hours: number;
+  uncertainty: TaskUncertainty;
+  assumptions: string | null;
+  override_note: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EstimateSettingsRow = {
+  project_id: string;
+  currency: string;
+  day_rate: number;
+  hours_per_day: number;
+  margin_pct: number;
+  contingency_pct: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DomainEvent = {
   id: string;
   type: string;

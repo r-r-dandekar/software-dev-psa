@@ -14,6 +14,7 @@ export default async function AppLayout({
   const { data } = await supabase
     .from("notifications")
     .select("*")
+    .is("read_at", null)
     .order("created_at", { ascending: false })
     .limit(20);
   const notifications = (data as Notification[]) ?? [];

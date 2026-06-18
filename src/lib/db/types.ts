@@ -91,6 +91,7 @@ export type Feature = {
 
 export type TaskDiscipline = "frontend" | "backend" | "qa" | "pm";
 export type TaskUncertainty = "low" | "medium" | "high";
+export type TaskStatus = "todo" | "in_progress" | "done" | "canceled";
 
 export type Task = {
   id: string;
@@ -104,8 +105,33 @@ export type Task = {
   assumptions: string | null;
   override_note: string | null;
   sort_order: number;
+  status: TaskStatus;
+  completed_at: string | null;
+  external_id: string | null;
+  external_key: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type ProjectIntegration = {
+  project_id: string;
+  provider: string;
+  linear_team_id: string | null;
+  linear_team_name: string | null;
+  last_synced_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type VelocitySnapshot = {
+  id: string;
+  project_id: string;
+  snapshot_date: string;
+  completed_hours: number;
+  total_hours: number;
+  done_count: number;
+  total_count: number;
+  created_at: string;
 };
 
 export type EstimateSettingsRow = {

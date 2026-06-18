@@ -34,8 +34,10 @@ export interface ReviewDeps {
   }): Promise<void>;
   notify(
     userIds: string[],
-    n: { type: string; title: string; body?: string; link?: string }
+    n: { type: string; title: string; body?: string; link?: string; artifactId?: string }
   ): Promise<void>;
+  /** Mark all recipients' notifications for this artifact read (auto-clear). */
+  clearArtifactNotifications(artifactId: string): Promise<void>;
   /** Roles permitted to approve/reject this artifact type (D10/D19). */
   requiredApprovers(type: string): AppRole[];
   /** Users to notify when an artifact enters review (the approvers). */
@@ -73,7 +75,8 @@ export async function performReviewAction(
     actorId: actor.id,
   });
 
-  // Notifications (S5): on submit, alert approvers; on decision, alert author.
+  // Notifications (S5): on submit, alert approvers; on a decision, the request
+  // is handled, so auto-clear the related notifications.
   if (action === "submit") {
     const approvers = await deps.listApprovers(artifact.type);
     await deps.notify(approvers, {
@@ -81,7 +84,10 @@ export async function performReviewAction(
       title: "Review requested",
       body: `A ${artifact.type.toUpperCase()} is awaiting your review.`,
       link: `/reviews`,
+      artifactId,
     });
+  } else if (action === "approve" || action === "reject") {
+    await deps.clearArtifactNotifications(artifactId);
   }
 
   return { ok: true, status: decision.next };

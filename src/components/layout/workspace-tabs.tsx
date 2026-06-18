@@ -11,6 +11,7 @@ export function WorkspaceTabs({ projectId }: { projectId: string }) {
     { label: "PRD", href: `/projects/${projectId}/prd` },
     { label: "Estimation", href: `/projects/${projectId}/estimation` },
     { label: "Timeline", href: `/projects/${projectId}/timeline` },
+    { label: "Delivery", href: `/projects/${projectId}/delivery` },
   ];
 
   return (

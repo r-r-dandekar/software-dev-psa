@@ -15,6 +15,7 @@ import type { ReviewAction, AppRole } from "./state";
 /** Which roles may approve/reject (and lock) each artifact type (D10/D19). */
 const APPROVER_ROLES: Record<string, AppRole[]> = {
   prd: ["pm", "admin"],
+  estimate: ["pm", "admin"],
 };
 
 function requiredApprovers(type: string): AppRole[] {

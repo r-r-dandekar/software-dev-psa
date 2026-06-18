@@ -1,4 +1,5 @@
-import { generateText } from "ai";
+import { generateText, generateObject } from "ai";
+import type { z } from "zod";
 import { getModel } from "./config";
 
 /**
@@ -26,4 +27,21 @@ export async function complete(input: CompleteInput): Promise<string> {
     temperature: input.temperature,
   });
   return text;
+}
+
+/** Generate a schema-validated structured object (provider-neutral). */
+export async function completeStructured<T>(input: {
+  system?: string;
+  prompt: string;
+  schema: z.ZodType<T>;
+  temperature?: number;
+}): Promise<T> {
+  const { object } = await generateObject({
+    model: getModel(),
+    system: input.system,
+    prompt: input.prompt,
+    schema: input.schema,
+    temperature: input.temperature,
+  });
+  return object;
 }

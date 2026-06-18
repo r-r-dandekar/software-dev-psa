@@ -119,6 +119,31 @@ export type EstimateSettingsRow = {
   updated_at: string;
 };
 
+export type ProjectCapacity = {
+  project_id: string;
+  devs: number;
+  hours_per_week_per_dev: number;
+  utilization_pct: number;
+  start_date: string;
+  target_date: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TimelineBaseline = {
+  project_id: string;
+  captured_at: string;
+  start_date: string;
+  target_date: string | null;
+  hours_per_week: number;
+  effort_min: number;
+  effort_expected: number;
+  effort_max: number;
+  end_optimistic: string | null;
+  end_expected: string | null;
+  end_pessimistic: string | null;
+};
+
 export type DomainEvent = {
   id: string;
   type: string;

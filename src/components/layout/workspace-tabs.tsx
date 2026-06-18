@@ -10,6 +10,7 @@ export function WorkspaceTabs({ projectId }: { projectId: string }) {
     { label: "Requirements", href: `/projects/${projectId}/requirements` },
     { label: "PRD", href: `/projects/${projectId}/prd` },
     { label: "Estimation", href: `/projects/${projectId}/estimation` },
+    { label: "Timeline", href: `/projects/${projectId}/timeline` },
   ];
 
   return (

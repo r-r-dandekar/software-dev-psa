@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Lock, Download, AlertCircle } from "lucide-react";
 import { getProjectArtifactByType, getCurrentVersion } from "@/lib/artifacts/store";
 import { listArtifactEvents } from "@/lib/events/bus";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/submit-button";
 import { PrdSection } from "./prd-section";
@@ -33,13 +33,12 @@ export default async function PrdPage({
         <p className="mt-1 text-sm text-muted-foreground">
           Generate one from the Requirements tab.
         </p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          render={<Link href={`/projects/${id}/requirements`} />}
+        <Link
+          href={`/projects/${id}/requirements`}
+          className={buttonVariants({ variant: "outline", className: "mt-4" })}
         >
           Go to Requirements
-        </Button>
+        </Link>
       </div>
     );
   }
@@ -113,15 +112,14 @@ export default async function PrdPage({
             </form>
           ) : null}
 
-          <Button
-            size="sm"
-            variant="outline"
-            render={
-              <a href={`/print/prd/${prd.id}`} target="_blank" rel="noopener noreferrer" />
-            }
+          <a
+            href={`/print/prd/${prd.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             <Download className="size-3.5" /> Export PDF
-          </Button>
+          </a>
         </div>
       </div>
 

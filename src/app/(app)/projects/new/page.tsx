@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createProjectAction } from "../actions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 const inputClass =
   "h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -51,9 +51,9 @@ export default function NewProjectPage() {
 
         <div className="flex gap-2">
           <Button type="submit">Create project</Button>
-          <Button variant="ghost" render={<Link href="/projects" />}>
+          <Link href="/projects" className={buttonVariants({ variant: "ghost" })}>
             Cancel
-          </Button>
+          </Link>
         </div>
       </form>
     </div>

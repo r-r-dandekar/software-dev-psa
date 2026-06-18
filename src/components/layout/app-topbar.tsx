@@ -9,7 +9,6 @@ import { signOut } from "@/app/login/actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -64,7 +63,9 @@ export function AppTopbar({
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <div className="px-2 py-1.5 text-sm font-semibold">
+              Notifications
+            </div>
             <DropdownMenuSeparator />
             {notifications.length === 0 ? (
               <div className="px-2 py-6 text-center text-sm text-muted-foreground">
@@ -111,8 +112,8 @@ export function AppTopbar({
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div className="truncate">{profile.email}</div>
+            <div className="px-2 py-1.5">
+              <div className="truncate text-sm font-medium">{profile.email}</div>
               <div className="mt-1 flex flex-wrap gap-1">
                 {profile.roles.length > 0 ? (
                   profile.roles.map((r) => (
@@ -124,7 +125,7 @@ export function AppTopbar({
                   <span className="text-xs text-muted-foreground">no roles</span>
                 )}
               </div>
-            </DropdownMenuLabel>
+            </div>
             <DropdownMenuSeparator />
             <form action={signOut}>
               <button

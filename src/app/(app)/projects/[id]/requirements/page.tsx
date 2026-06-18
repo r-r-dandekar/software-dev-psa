@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Trash2, FileText } from "lucide-react";
 import { listRequirements } from "@/lib/requirements/repo";
 import { getProjectArtifactByType } from "@/lib/artifacts/store";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -120,9 +120,12 @@ export default async function RequirementsPage({
           </div>
         </div>
         {prd ? (
-          <Button variant="outline" render={<Link href={`/projects/${id}/prd`} />}>
+          <Link
+            href={`/projects/${id}/prd`}
+            className={buttonVariants({ variant: "outline" })}
+          >
             <FileText className="size-4" /> Open PRD
-          </Button>
+          </Link>
         ) : (
           <form action={generatePrdAction}>
             <input type="hidden" name="projectId" value={id} />

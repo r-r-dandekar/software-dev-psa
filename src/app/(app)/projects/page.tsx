@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FolderKanban, Plus } from "lucide-react";
 import { listProjects } from "@/lib/projects/repo";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function ProjectsPage() {
   const projects = await listProjects();
@@ -16,9 +16,9 @@ export default async function ProjectsPage() {
             Every client engagement, from lead to completed.
           </p>
         </div>
-        <Button render={<Link href="/projects/new" />}>
+        <Link href="/projects/new" className={buttonVariants()}>
           <Plus className="size-4" /> New project
-        </Button>
+        </Link>
       </div>
 
       {projects.length === 0 ? (

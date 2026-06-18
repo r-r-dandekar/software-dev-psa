@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ListChecks } from "lucide-react";
 import { listArtifactsByStatus } from "@/lib/artifacts/store";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default async function ReviewsPage() {
@@ -51,13 +51,12 @@ export default async function ReviewsPage() {
                   </td>
                   <td className="px-3 py-2 text-right">
                     {a.type === "prd" && a.project ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        render={<Link href={`/projects/${a.project.id}/prd`} />}
+                      <Link
+                        href={`/projects/${a.project.id}/prd`}
+                        className={buttonVariants({ variant: "outline", size: "sm" })}
                       >
                         Review
-                      </Button>
+                      </Link>
                     ) : null}
                   </td>
                 </tr>

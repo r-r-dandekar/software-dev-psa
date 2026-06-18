@@ -118,7 +118,18 @@ export type ProjectIntegration = {
   provider: string;
   linear_team_id: string | null;
   linear_team_name: string | null;
+  github_owner: string | null;
+  github_repo: string | null;
   last_synced_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ReportSettings = {
+  project_id: string;
+  tone: string;
+  formality: string;
+  notes: string | null;
   created_at: string;
   updated_at: string;
 };

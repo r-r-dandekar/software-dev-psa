@@ -16,6 +16,7 @@ import type { ReviewAction, AppRole } from "./state";
 const APPROVER_ROLES: Record<string, AppRole[]> = {
   prd: ["pm", "admin"],
   estimate: ["pm", "admin"],
+  status_report: ["pm", "admin"],
 };
 
 function requiredApprovers(type: string): AppRole[] {

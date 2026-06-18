@@ -126,6 +126,20 @@ export async function listArtifactsByStatus(
   return (data as QueueItem[]) ?? [];
 }
 
+export async function listProjectArtifacts(
+  projectId: string,
+  type: string
+): Promise<Artifact[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("artifacts")
+    .select("*")
+    .eq("project_id", projectId)
+    .eq("type", type)
+    .order("created_at", { ascending: false });
+  return (data as Artifact[]) ?? [];
+}
+
 export async function setReviewStatus(
   id: string,
   status: ReviewStatus

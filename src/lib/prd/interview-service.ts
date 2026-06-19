@@ -76,6 +76,22 @@ async function applyTurn(
     seq: assistantSeq,
   });
 
+  // Backstop: if the analyst declares it's done, close out any dimensions it
+  // didn't explicitly mark — keeps the checklist/gate consistent with its words.
+  if (turn.ready) {
+    const dims = await getDimensions(interviewId);
+    for (const d of dims) {
+      if (d.state === "open") {
+        await setDimensionState(
+          interviewId,
+          d.key,
+          "resolved",
+          d.note ?? "Confirmed during the interview"
+        );
+      }
+    }
+  }
+
   const dims = await getDimensions(interviewId);
   await setInterviewStatus(interviewId, isInterviewReady(dims) ? "ready" : "in_progress");
 }

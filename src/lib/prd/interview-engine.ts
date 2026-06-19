@@ -35,6 +35,7 @@ Rules:
 - If the user wants to defer something, set that dimension's state to "deferred" with their reason as the note.
 - NEVER invent facts. If something is unclear, ask — do not assume.
 - Set "ready" to true ONLY when every dimension is resolved, deferred, or n-a. Otherwise keep asking.
+- When you set "ready" to true, you MUST also include a dimension_update (state "resolved", with a concise note) for EVERY dimension that is still open — do not declare readiness in prose without emitting those updates.
 - Be concise and concrete. No filler.`;
 
 export async function runInterviewTurn(input: {

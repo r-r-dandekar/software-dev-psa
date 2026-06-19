@@ -15,7 +15,7 @@ export type AiProviderId = "google" | "anthropic";
 const PROVIDER = (process.env.AI_PROVIDER ?? "google") as AiProviderId;
 
 const DEFAULT_MODEL: Record<AiProviderId, string> = {
-  google: "gemini-2.5-flash",
+  google: "gemini-2.5-flash-lite",
   anthropic: "claude-sonnet-4-5",
 };
 

@@ -5,13 +5,9 @@ import { getProjectArtifactByType } from "@/lib/artifacts/store";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/submit-button";
-import {
-  addRequirementAction,
-  deleteRequirementAction,
-  generatePrdAction,
-} from "./actions";
+import { addRequirementAction, deleteRequirementAction } from "./actions";
 
-const inputClass =
+const inputCls =
   "h-9 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default async function RequirementsPage({
@@ -27,48 +23,53 @@ export default async function RequirementsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Add requirement */}
-      <form
-        action={addRequirementAction}
-        className="flex flex-wrap items-end gap-2 rounded-lg border p-3"
-      >
+      {/* Add requirement: heading + optional description */}
+      <form action={addRequirementAction} className="space-y-2 rounded-lg border p-3">
         <input type="hidden" name="projectId" value={id} />
-        <div className="min-w-[260px] flex-1 space-y-1">
+        <div className="flex flex-wrap items-end gap-2">
+          <div className="min-w-[240px] flex-1 space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">
+              Requirement (heading)
+            </label>
+            <input name="heading" required placeholder="User authentication" className={inputCls} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Category</label>
+            <select name="category" className={inputCls}>
+              <option value="functional">functional</option>
+              <option value="non_functional">non-functional</option>
+              <option value="integration">integration</option>
+              <option value="constraint">constraint</option>
+              <option value="persona">persona</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground">Priority</label>
+            <select name="priority" className={inputCls}>
+              <option value="must">must</option>
+              <option value="should">should</option>
+              <option value="nice">nice</option>
+            </select>
+          </div>
+          <SubmitButton pendingLabel="Adding…">Add</SubmitButton>
+        </div>
+        <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">
-            Requirement
+            Description <span className="font-normal">(optional — the interview will fill gaps)</span>
           </label>
-          <input
+          <textarea
             name="description"
-            required
-            placeholder="The system must…"
-            className={inputClass}
+            rows={2}
+            placeholder="Any detail you already know…"
+            className="w-full rounded-md border bg-background p-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Category</label>
-          <select name="category" className={inputClass}>
-            <option value="functional">functional</option>
-            <option value="non_functional">non-functional</option>
-            <option value="integration">integration</option>
-            <option value="constraint">constraint</option>
-            <option value="persona">persona</option>
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Priority</label>
-          <select name="priority" className={inputClass}>
-            <option value="must">must</option>
-            <option value="should">should</option>
-            <option value="nice">nice</option>
-          </select>
-        </div>
-        <SubmitButton pendingLabel="Adding…">Add</SubmitButton>
       </form>
 
       {/* Requirements list */}
       {requirements.length === 0 ? (
         <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-          No requirements yet. Add a few, then generate a PRD.
+          No requirements yet. Add a few, then build the PRD via the interview.
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border">
@@ -83,8 +84,13 @@ export default async function RequirementsPage({
             </thead>
             <tbody>
               {requirements.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-3 py-2">{r.description}</td>
+                <tr key={r.id} className="border-t align-top">
+                  <td className="px-3 py-2">
+                    <div className="font-medium">{r.heading || r.description}</div>
+                    {r.heading && r.description ? (
+                      <div className="text-xs text-muted-foreground">{r.description}</div>
+                    ) : null}
+                  </td>
                   <td className="px-3 py-2 text-muted-foreground">{r.category}</td>
                   <td className="px-3 py-2">
                     <Badge variant="secondary">{r.priority}</Badge>
@@ -109,31 +115,22 @@ export default async function RequirementsPage({
         </div>
       )}
 
-      {/* Generate / open PRD */}
+      {/* PRD lives on the PRD tab (interview → generate) */}
       <div className="flex items-center justify-between rounded-lg border bg-card p-4">
         <div>
           <div className="text-sm font-medium">Product Requirements Document</div>
           <div className="text-sm text-muted-foreground">
             {prd
               ? "A PRD exists for this project."
-              : "Generate a PRD from the requirements above."}
+              : "Build the PRD on the PRD tab — a guided interview clarifies the details first."}
           </div>
         </div>
-        {prd ? (
-          <Link
-            href={`/projects/${id}/prd`}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            <FileText className="size-4" /> Open PRD
-          </Link>
-        ) : (
-          <form action={generatePrdAction}>
-            <input type="hidden" name="projectId" value={id} />
-            <SubmitButton pendingLabel="Generating PRD…">
-              <FileText className="size-4" /> Generate PRD
-            </SubmitButton>
-          </form>
-        )}
+        <Link
+          href={`/projects/${id}/prd`}
+          className={buttonVariants({ variant: prd ? "outline" : "default" })}
+        >
+          <FileText className="size-4" /> {prd ? "Open PRD" : "Build PRD"}
+        </Link>
       </div>
     </div>
   );

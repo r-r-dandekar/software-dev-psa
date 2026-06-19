@@ -17,7 +17,8 @@ export async function listRequirements(
 
 export async function addRequirement(input: {
   projectId: string;
-  description: string;
+  heading: string;
+  description?: string | null;
   category?: string;
   priority?: string;
 }): Promise<Requirement> {
@@ -26,7 +27,8 @@ export async function addRequirement(input: {
     .from("requirements")
     .insert({
       project_id: input.projectId,
-      description: input.description,
+      heading: input.heading,
+      description: input.description ?? null,
       category: input.category ?? "functional",
       priority: input.priority ?? "must",
     })

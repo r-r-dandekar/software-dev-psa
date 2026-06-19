@@ -39,3 +39,23 @@ export function getModel(): LanguageModel {
       throw new Error(`Unsupported AI provider: ${PROVIDER}`);
   }
 }
+
+// Embeddings (KB/RAG). Anthropic has no embedding API, so embeddings always use
+// an embedding-capable provider (Gemini's free tier by default), independent of
+// AI_PROVIDER. text-embedding-004 → 768 dims (matches the kb_chunks column).
+const EMBEDDING_PROVIDER = process.env.AI_EMBEDDING_PROVIDER ?? "google";
+const EMBEDDING_MODEL = process.env.AI_EMBEDDING_MODEL ?? "gemini-embedding-001";
+export const EMBEDDING_DIMENSIONS = 768;
+
+export function getEmbeddingModel() {
+  switch (EMBEDDING_PROVIDER) {
+    case "google": {
+      const google = createGoogleGenerativeAI({
+        apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      });
+      return google.textEmbeddingModel(EMBEDDING_MODEL);
+    }
+    default:
+      throw new Error(`Unsupported embedding provider: ${EMBEDDING_PROVIDER}`);
+  }
+}

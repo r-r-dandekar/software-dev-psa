@@ -134,6 +134,17 @@ export type ReportSettings = {
   updated_at: string;
 };
 
+export type KbQuery = {
+  id: string;
+  user_id: string | null;
+  question: string;
+  answer: string;
+  citations: { title: string; artifactId: string | null }[];
+  is_gap: boolean;
+  helpful: boolean | null;
+  created_at: string;
+};
+
 export type VelocitySnapshot = {
   id: string;
   project_id: string;

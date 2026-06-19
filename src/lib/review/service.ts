@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { getCurrentProfile } from "@/lib/auth";
 import { emitEvent } from "@/lib/events/bus";
 import { notifyUsers, markArtifactNotificationsRead } from "@/lib/notifications/repo";
@@ -26,7 +26,7 @@ function requiredApprovers(type: string): AppRole[] {
 async function listApprovers(type: string): Promise<string[]> {
   const roles = requiredApprovers(type);
   if (roles.length === 0) return [];
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("profiles")
     .select("id")

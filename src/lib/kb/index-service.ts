@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { getCurrentVersion } from "@/lib/artifacts/store";
 import { embedTexts } from "@/lib/ai/gateway";
 import { chunkText } from "./chunk";
@@ -12,7 +12,7 @@ export type IndexResult = { artifacts: number; chunks: number };
  * a nightly Inngest job is the deferred background-work follow-up.
  */
 export async function reindexAll(): Promise<IndexResult> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("artifacts")
     .select("*")
@@ -49,7 +49,7 @@ export async function reindexAll(): Promise<IndexResult> {
 }
 
 export async function countChunks(): Promise<number> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { count } = await supabase
     .from("kb_chunks")
     .select("*", { count: "exact", head: true });

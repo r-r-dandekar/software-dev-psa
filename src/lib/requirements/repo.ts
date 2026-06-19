@@ -1,11 +1,11 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import type { Requirement } from "@/lib/db/types";
 
 export async function listRequirements(
   projectId: string
 ): Promise<Requirement[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("requirements")
     .select("*")
@@ -22,7 +22,7 @@ export async function addRequirement(input: {
   category?: string;
   priority?: string;
 }): Promise<Requirement> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data, error } = await supabase
     .from("requirements")
     .insert({
@@ -39,7 +39,7 @@ export async function addRequirement(input: {
 }
 
 export async function deleteRequirement(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase.from("requirements").delete().eq("id", id);
   if (error) throw error;
 }

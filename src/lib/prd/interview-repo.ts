@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { DEFAULT_DIMENSIONS } from "./interview-core";
 import type {
   PrdInterview,
@@ -10,7 +10,7 @@ import type {
 } from "@/lib/db/types";
 
 export async function getInterview(projectId: string): Promise<PrdInterview | null> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("prd_interviews")
     .select("*")
@@ -20,7 +20,7 @@ export async function getInterview(projectId: string): Promise<PrdInterview | nu
 }
 
 export async function createInterview(projectId: string): Promise<PrdInterview> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data, error } = await supabase
     .from("prd_interviews")
     .insert({ project_id: projectId, status: "in_progress" })
@@ -45,14 +45,14 @@ export async function setInterviewStatus(
   interviewId: string,
   status: PrdInterviewStatus
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("prd_interviews").update({ status }).eq("id", interviewId);
 }
 
 export async function getDimensions(
   interviewId: string
 ): Promise<PrdInterviewDimension[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("prd_interview_dimensions")
     .select("*")
@@ -64,7 +64,7 @@ export async function getDimensions(
 export async function getMessages(
   interviewId: string
 ): Promise<PrdInterviewMessage[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("prd_interview_messages")
     .select("*")
@@ -80,7 +80,7 @@ export async function appendMessage(input: {
   payload?: { recommended?: string; options?: string[] };
   seq: number;
 }): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("prd_interview_messages").insert({
     interview_id: input.interviewId,
     role: input.role,
@@ -99,7 +99,7 @@ export async function upsertDimension(input: {
   isCustom?: boolean;
   sortOrder?: number;
 }): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("prd_interview_dimensions").upsert(
     {
       interview_id: input.interviewId,
@@ -120,7 +120,7 @@ export async function setDimensionState(
   state: DimensionState,
   note?: string | null
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const patch: Record<string, unknown> = { state };
   if (note !== undefined) patch.note = note;
   await supabase

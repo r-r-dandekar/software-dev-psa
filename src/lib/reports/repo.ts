@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import type { ReportSettings } from "@/lib/db/types";
 
 const DEFAULTS = { tone: "non_technical", formality: "formal" };
@@ -7,7 +7,7 @@ const DEFAULTS = { tone: "non_technical", formality: "formal" };
 export async function getOrCreateReportSettings(
   projectId: string
 ): Promise<ReportSettings> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("report_settings")
     .select("*")
@@ -28,7 +28,7 @@ export async function updateReportSettings(
   projectId: string,
   patch: Partial<Pick<ReportSettings, "tone" | "formality" | "notes">>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await getOrCreateReportSettings(projectId);
   const { error } = await supabase
     .from("report_settings")

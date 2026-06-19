@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type NotifyInput = {
@@ -18,7 +18,7 @@ export async function notifyUsers(
   client?: SupabaseClient
 ): Promise<void> {
   if (userIds.length === 0) return;
-  const supabase = client ?? (await createClient());
+  const supabase = client ?? (await getDb());
   await supabase.from("notifications").insert(
     userIds.map((user_id) => ({
       user_id,
@@ -33,7 +33,7 @@ export async function notifyUsers(
 
 /** Mark one of the current user's notifications read. */
 export async function markRead(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase
     .from("notifications")
     .update({ read_at: new Date().toISOString() })
@@ -42,7 +42,7 @@ export async function markRead(id: string): Promise<void> {
 
 /** Mark all of the current user's unread notifications read. */
 export async function markAllRead(): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const {
     data: { user },
   } = await supabase.auth.getUser();

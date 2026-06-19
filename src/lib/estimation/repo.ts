@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import type {
   Feature,
   Task,
@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS = {
 export async function getOrCreateSettings(
   projectId: string
 ): Promise<EstimateSettingsRow> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("estimate_settings")
     .select("*")
@@ -41,7 +41,7 @@ export async function updateSettings(
   projectId: string,
   patch: Partial<Omit<EstimateSettingsRow, "project_id" | "created_at" | "updated_at">>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await getOrCreateSettings(projectId); // ensure row exists
   const { error } = await supabase
     .from("estimate_settings")
@@ -51,7 +51,7 @@ export async function updateSettings(
 }
 
 export async function listFeatures(projectId: string): Promise<Feature[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("features")
     .select("*")
@@ -61,7 +61,7 @@ export async function listFeatures(projectId: string): Promise<Feature[]> {
 }
 
 export async function listTasks(projectId: string): Promise<Task[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("tasks")
     .select("*")
@@ -76,7 +76,7 @@ export async function replaceBreakdown(
   projectId: string,
   features: { name: string; description?: string; tasks: Omit<EngineTask, "id">[] }[]
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("tasks").delete().eq("project_id", projectId);
   await supabase.from("features").delete().eq("project_id", projectId);
 
@@ -123,13 +123,13 @@ export async function updateTask(
     override_note?: string;
   }
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase.from("tasks").update(patch).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("tasks").delete().eq("id", id);
 }
 

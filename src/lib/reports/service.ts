@@ -15,7 +15,7 @@ const WINDOW_DAYS = 7;
 
 export async function generateStatusReport(
   projectId: string,
-  createdBy: string
+  createdBy: string | null
 ): Promise<Artifact> {
   const project = await getProject(projectId);
   if (!project) throw new Error("Project not found");

@@ -1,11 +1,11 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import type { Project, ProjectStage } from "@/lib/db/types";
 
 export type ProjectWithClient = Project & { client: { name: string } | null };
 
 export async function listProjects(): Promise<ProjectWithClient[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("projects")
     .select("*, client:clients(name)")
@@ -14,7 +14,7 @@ export async function listProjects(): Promise<ProjectWithClient[]> {
 }
 
 export async function getProject(id: string): Promise<ProjectWithClient | null> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("projects")
     .select("*, client:clients(name)")
@@ -30,7 +30,7 @@ export async function createProjectWithClient(input: {
   targetLaunch?: string;
   createdBy: string;
 }): Promise<Project> {
-  const supabase = await createClient();
+  const supabase = await getDb();
 
   const { data: client, error: cErr } = await supabase
     .from("clients")
@@ -60,7 +60,7 @@ export async function updateProjectStage(
   id: string,
   stage: ProjectStage
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase
     .from("projects")
     .update({ stage })

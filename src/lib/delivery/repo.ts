@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import type {
   ProjectIntegration,
   VelocitySnapshot,
@@ -9,7 +9,7 @@ import type {
 export async function getOrCreateIntegration(
   projectId: string
 ): Promise<ProjectIntegration> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("project_integrations")
     .select("*")
@@ -32,7 +32,7 @@ export async function updateIntegration(
     Omit<ProjectIntegration, "project_id" | "created_at" | "updated_at" | "provider">
   >
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await getOrCreateIntegration(projectId);
   const { error } = await supabase
     .from("project_integrations")
@@ -50,7 +50,7 @@ export async function setTaskSync(
     external_key?: string;
   }
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase.from("tasks").update(patch).eq("id", taskId);
   if (error) throw error;
 }
@@ -58,7 +58,7 @@ export async function setTaskSync(
 export async function listSnapshots(
   projectId: string
 ): Promise<VelocitySnapshot[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("velocity_snapshots")
     .select("*")
@@ -76,7 +76,7 @@ export async function upsertSnapshot(
     total_count: number;
   }
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase.from("velocity_snapshots").upsert(
     {
       project_id: projectId,

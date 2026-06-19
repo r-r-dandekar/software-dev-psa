@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { embedText, complete } from "@/lib/ai/gateway";
 import {
   assembleContext,
@@ -24,7 +24,7 @@ export async function answerQuestion(
   question: string,
   userId: string
 ): Promise<Answer> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const embedding = await embedText(question);
 
   const { data } = await supabase.rpc("match_kb_chunks", {
@@ -65,6 +65,6 @@ export async function answerQuestion(
 }
 
 export async function flagQuery(queryId: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   await supabase.from("kb_queries").update({ helpful: false }).eq("id", queryId);
 }

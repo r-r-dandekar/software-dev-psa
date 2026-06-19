@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { inngest } from "@/lib/inngest/client";
 import type { DomainEvent } from "@/lib/db/types";
 
@@ -21,7 +21,7 @@ export async function emitEvent(
   input: EmitInput,
   client?: SupabaseClient
 ): Promise<void> {
-  const supabase = client ?? (await createClient());
+  const supabase = client ?? (await getDb());
   await supabase.from("domain_events").insert({
     type: input.type,
     project_id: input.projectId ?? null,
@@ -49,7 +49,7 @@ export async function emitEvent(
 export async function listArtifactEvents(
   artifactId: string
 ): Promise<DomainEvent[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("domain_events")
     .select("*")

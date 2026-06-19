@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { getDb } from "@/lib/supabase/context";
 import { flattenToText, type ArtifactContent } from "./content";
 import type { ReviewStatus } from "@/lib/review/state";
 import type { Artifact, ArtifactVersion } from "@/lib/db/types";
@@ -16,9 +16,9 @@ export async function createArtifactWithVersion(input: {
   title: string;
   sourceModule: string;
   content: ArtifactContent;
-  createdBy: string;
+  createdBy: string | null;
 }): Promise<Artifact> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data: artifact, error } = await supabase
     .from("artifacts")
     .insert({
@@ -47,9 +47,9 @@ export async function createArtifactWithVersion(input: {
 export async function addVersion(input: {
   artifactId: string;
   content: ArtifactContent;
-  createdBy: string;
+  createdBy: string | null;
 }): Promise<number> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const current = await getArtifact(input.artifactId);
   if (!current) throw new Error("Artifact not found");
 
@@ -73,7 +73,7 @@ export async function addVersion(input: {
 }
 
 export async function getArtifact(id: string): Promise<Artifact | null> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase.from("artifacts").select("*").eq("id", id).single();
   return (data as Artifact) ?? null;
 }
@@ -83,7 +83,7 @@ export async function getCurrentVersion(
 ): Promise<ArtifactVersion | null> {
   const artifact = await getArtifact(artifactId);
   if (!artifact) return null;
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("artifact_versions")
     .select("*")
@@ -97,7 +97,7 @@ export async function getProjectArtifactByType(
   projectId: string,
   type: string
 ): Promise<Artifact | null> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("artifacts")
     .select("*")
@@ -117,7 +117,7 @@ export type QueueItem = Artifact & {
 export async function listArtifactsByStatus(
   status: ReviewStatus
 ): Promise<QueueItem[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("artifacts")
     .select("*, project:projects(id, name)")
@@ -130,7 +130,7 @@ export async function listProjectArtifacts(
   projectId: string,
   type: string
 ): Promise<Artifact[]> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { data } = await supabase
     .from("artifacts")
     .select("*")
@@ -144,7 +144,7 @@ export async function setReviewStatus(
   id: string,
   status: ReviewStatus
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase
     .from("artifacts")
     .update({ review_status: status })
@@ -153,7 +153,7 @@ export async function setReviewStatus(
 }
 
 export async function lockArtifact(id: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getDb();
   const { error } = await supabase
     .from("artifacts")
     .update({ locked_at: new Date().toISOString() })

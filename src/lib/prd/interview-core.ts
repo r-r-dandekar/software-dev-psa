@@ -5,7 +5,7 @@
 import type { DimensionState } from "@/lib/db/types";
 
 export const DEFAULT_DIMENSIONS: { key: string; label: string }[] = [
-  { key: "goal", label: "Goal & success criteria" },
+  { key: "goal", label: "Scope — what the software does" },
   { key: "users", label: "User roles / personas" },
   { key: "flows", label: "Core flows & key features" },
   { key: "data", label: "Data & integrations" },

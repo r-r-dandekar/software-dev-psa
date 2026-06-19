@@ -84,30 +84,12 @@ function reqLikes(reqs: { heading: string; description: string | null }[]) {
   return reqs.map((r) => ({ heading: r.heading, description: r.description }));
 }
 
-/** Start the interview (first question) or return the existing one. */
+/** Start the interview or return the existing one. The first question is
+ *  produced by processPendingTurn so a failed AI call leaves a resumable state. */
 export async function startOrGetInterview(projectId: string): Promise<InterviewState> {
   const existing = await getInterview(projectId);
-  if (existing) return loadState(existing);
-
-  const interview = await createInterview(projectId);
-  const [requirements, dimensions] = await Promise.all([
-    listRequirements(projectId),
-    getDimensions(interview.id),
-  ]);
-
-  const turn = await runInterviewTurn({
-    requirements: reqLikes(requirements),
-    dimensions: dimensions.map((d) => ({
-      key: d.key,
-      label: d.label,
-      state: d.state,
-      note: d.note,
-    })),
-    recentMessages: [],
-    userMessage: "",
-  });
-  await applyTurn(interview.id, turn, 0);
-  return loadState(interview);
+  if (!existing) await createInterview(projectId);
+  return processPendingTurn(projectId);
 }
 
 export async function getInterviewState(
@@ -117,26 +99,27 @@ export async function getInterviewState(
   return interview ? loadState(interview) : null;
 }
 
-export async function sendInterviewMessage(
-  projectId: string,
-  text: string
-): Promise<InterviewState> {
+/**
+ * Produce the next assistant turn when one is pending — i.e. when the interview
+ * has no messages yet (needs its first question) or the last message is from
+ * the user (their answer hasn't been processed). Safe to call repeatedly: if
+ * the last message is already an assistant turn, it's a no-op. This is what
+ * makes the interview resume seamlessly after an interruption (e.g. a rate
+ * limit) — the user's answer is committed before the AI call, so a retry just
+ * re-runs this.
+ */
+export async function processPendingTurn(projectId: string): Promise<InterviewState> {
   const interview = await getInterview(projectId);
   if (!interview) throw new Error("No interview in progress");
 
   const messages = await getMessages(interview.id);
-  const seq = messages.length;
-  await appendMessage({ interviewId: interview.id, role: "user", content: text, seq });
+  const last = messages[messages.length - 1];
+  if (last && last.role === "assistant") return loadState(interview); // nothing pending
 
   const [requirements, dimensions] = await Promise.all([
     listRequirements(projectId),
     getDimensions(interview.id),
   ]);
-
-  const recent = [...messages.slice(-10), { role: "user", content: text }].map((m) => ({
-    role: m.role,
-    content: m.content,
-  }));
 
   const turn = await runInterviewTurn({
     requirements: reqLikes(requirements),
@@ -146,11 +129,29 @@ export async function sendInterviewMessage(
       state: d.state,
       note: d.note,
     })),
-    recentMessages: recent,
-    userMessage: text,
+    recentMessages: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
+    userMessage: last?.content ?? "",
   });
-  await applyTurn(interview.id, turn, seq + 1);
+  await applyTurn(interview.id, turn, messages.length);
   return loadState(interview);
+}
+
+/** Commit the user's answer, then process the AI turn. If the AI call fails,
+ *  the answer is already saved and processPendingTurn can finish it on resume. */
+export async function sendInterviewMessage(
+  projectId: string,
+  text: string
+): Promise<InterviewState> {
+  const interview = await getInterview(projectId);
+  if (!interview) throw new Error("No interview in progress");
+  const messages = await getMessages(interview.id);
+  await appendMessage({
+    interviewId: interview.id,
+    role: "user",
+    content: text,
+    seq: messages.length,
+  });
+  return processPendingTurn(projectId);
 }
 
 export async function deferDimension(

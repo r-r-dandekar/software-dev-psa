@@ -13,6 +13,7 @@ import { InterviewComposer } from "./interview-composer";
 import { submitAction, approveAction, rejectAction, lockAction } from "./actions";
 import {
   startInterviewAction,
+  continueInterviewAction,
   deferDimensionAction,
   revisitDimensionAction,
   generateFromInterviewAction,
@@ -82,6 +83,9 @@ export default async function PrdPage({
     const { messages, dimensions } = interviewState;
     const ready = isInterviewReady(dimensions);
     const last = messages[messages.length - 1];
+    // Pending = the assistant's turn hasn't been produced yet (no messages, or
+    // the user answered but the AI turn was interrupted). Resumable via Continue.
+    const pending = !last || last.role === "user";
     const recommended =
       last?.role === "assistant" ? last.payload?.recommended : undefined;
     const options = last?.role === "assistant" ? last.payload?.options : undefined;
@@ -116,9 +120,25 @@ export default async function PrdPage({
             ))}
           </div>
 
-          <InterviewComposer projectId={id} recommended={recommended} options={options} />
+          {pending ? (
+            <div className="rounded-lg border bg-card p-3 text-sm">
+              <p className="text-muted-foreground">
+                {messages.length === 0
+                  ? "Ready to begin."
+                  : "Your answer was saved, but the assistant hasn't responded yet (it may have hit a rate limit). Continue when ready — nothing is lost."}
+              </p>
+              <form action={continueInterviewAction} className="mt-2">
+                <input type="hidden" name="projectId" value={id} />
+                <SubmitButton size="sm" pendingLabel="Working…">
+                  Continue
+                </SubmitButton>
+              </form>
+            </div>
+          ) : (
+            <InterviewComposer projectId={id} recommended={recommended} options={options} />
+          )}
 
-          {ready ? (
+          {ready && !pending ? (
             <form action={generateFromInterviewAction}>
               <input type="hidden" name="projectId" value={id} />
               <SubmitButton pendingLabel="Generating PRD…">

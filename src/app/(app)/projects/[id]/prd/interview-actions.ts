@@ -6,6 +6,7 @@ import { requireProfile } from "@/lib/auth";
 import {
   startOrGetInterview,
   sendInterviewMessage,
+  processPendingTurn,
   deferDimension,
   revisitDimension,
   generatePrdFromInterview,
@@ -13,40 +14,67 @@ import {
 
 const prdPath = (projectId: string) => `/projects/${projectId}/prd`;
 
+function back(projectId: string, error?: string): never {
+  const base = `${prdPath(projectId)}?interview=1`;
+  redirect(error ? `${base}&error=${encodeURIComponent(error)}` : base);
+}
+
 export async function startInterviewAction(formData: FormData) {
   await requireProfile();
   const projectId = String(formData.get("projectId"));
-  await startOrGetInterview(projectId);
+  let error = "";
+  try {
+    await startOrGetInterview(projectId);
+  } catch (e) {
+    error = (e as Error).message; // interview/pending state is saved; resumable
+  }
   revalidatePath(prdPath(projectId));
-  redirect(prdPath(projectId));
+  back(projectId, error || undefined);
 }
 
 export async function sendMessageAction(formData: FormData) {
   await requireProfile();
   const projectId = String(formData.get("projectId"));
   const text = String(formData.get("message") ?? "").trim();
-  if (text) await sendInterviewMessage(projectId, text);
+  let error = "";
+  if (text) {
+    try {
+      await sendInterviewMessage(projectId, text);
+    } catch (e) {
+      error = (e as Error).message; // answer saved; resume to finish the turn
+    }
+  }
   revalidatePath(prdPath(projectId));
-  redirect(`${prdPath(projectId)}?interview=1`);
+  back(projectId, error || undefined);
+}
+
+export async function continueInterviewAction(formData: FormData) {
+  await requireProfile();
+  const projectId = String(formData.get("projectId"));
+  let error = "";
+  try {
+    await processPendingTurn(projectId);
+  } catch (e) {
+    error = (e as Error).message;
+  }
+  revalidatePath(prdPath(projectId));
+  back(projectId, error || undefined);
 }
 
 export async function deferDimensionAction(formData: FormData) {
   await requireProfile();
   const projectId = String(formData.get("projectId"));
-  const key = String(formData.get("key"));
-  const reason = String(formData.get("reason") ?? "Deferred by user");
-  await deferDimension(projectId, key, reason);
+  await deferDimension(projectId, String(formData.get("key")), String(formData.get("reason") ?? "Deferred by user"));
   revalidatePath(prdPath(projectId));
-  redirect(`${prdPath(projectId)}?interview=1`);
+  back(projectId);
 }
 
 export async function revisitDimensionAction(formData: FormData) {
   await requireProfile();
   const projectId = String(formData.get("projectId"));
-  const key = String(formData.get("key"));
-  await revisitDimension(projectId, key);
+  await revisitDimension(projectId, String(formData.get("key")));
   revalidatePath(prdPath(projectId));
-  redirect(`${prdPath(projectId)}?interview=1`);
+  back(projectId);
 }
 
 export async function generateFromInterviewAction(formData: FormData) {
@@ -59,5 +87,6 @@ export async function generateFromInterviewAction(formData: FormData) {
     error = (e as Error).message;
   }
   revalidatePath(prdPath(projectId));
-  redirect(error ? `${prdPath(projectId)}?interview=1&error=${encodeURIComponent(error)}` : prdPath(projectId));
+  if (error) back(projectId, error);
+  redirect(prdPath(projectId));
 }

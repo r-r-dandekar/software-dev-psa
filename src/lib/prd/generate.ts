@@ -76,6 +76,34 @@ export async function generatePrdContent(
   return toContent(object as Record<SectionKey, string>);
 }
 
+const SYSTEM_FROM_INTERVIEW = `${SYSTEM}
+
+CRITICAL: Use ONLY the clarified decisions and requirements provided below. Do NOT invent or assume any detail that is not stated. For anything marked DEFERRED, NOT APPLICABLE, or otherwise unresolved, do not guess — list it under "Open Questions". A faithful, modest PRD is the goal; do not embellish.`;
+
+/** Generate a PRD from the interview digest (D5 — no invention). */
+export async function generatePrdContentFromDigest(
+  project: Project,
+  digest: string
+): Promise<ArtifactContent> {
+  const object = await completeStructured({
+    system: SYSTEM_FROM_INTERVIEW,
+    prompt: [
+      `Project: ${project.name}`,
+      project.tech_stack ? `Tech stack: ${project.tech_stack}` : null,
+      project.target_launch ? `Target launch: ${project.target_launch}` : null,
+      ``,
+      `Clarified inputs (the ONLY source of truth):`,
+      digest,
+      ``,
+      `Produce the PRD strictly from the above.`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    schema: sectionSchema,
+  });
+  return toContent(object as Record<SectionKey, string>);
+}
+
 /** Regenerate a single section's body (S7), keeping the rest untouched. */
 export async function generatePrdSection(
   project: Project,

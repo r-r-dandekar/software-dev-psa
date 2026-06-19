@@ -46,12 +46,47 @@ export type Project = {
 export type Requirement = {
   id: string;
   project_id: string;
+  heading: string;
   category: string;
-  description: string;
+  description: string | null;
   priority: string;
   source: string | null;
   sort_order: number;
   created_at: string;
+  updated_at: string;
+};
+
+export type PrdInterviewStatus = "in_progress" | "ready" | "generated";
+
+export type PrdInterview = {
+  id: string;
+  project_id: string;
+  status: PrdInterviewStatus;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PrdInterviewMessage = {
+  id: string;
+  interview_id: string;
+  role: "user" | "assistant";
+  content: string;
+  payload: { recommended?: string; options?: string[] };
+  seq: number;
+  created_at: string;
+};
+
+export type DimensionState = "open" | "resolved" | "deferred" | "na";
+
+export type PrdInterviewDimension = {
+  id: string;
+  interview_id: string;
+  key: string;
+  label: string;
+  state: DimensionState;
+  note: string | null;
+  is_custom: boolean;
+  sort_order: number;
   updated_at: string;
 };
 

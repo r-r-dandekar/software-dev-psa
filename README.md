@@ -1,5 +1,5 @@
 ﻿# Caesium
-**An OS for Software Development Agencies**
+**The all-in-one workspace for software agencies**
 
 Caesium is a web-based management platform built for software development agencies. It brings together the tools a typical agency uses across multiple disconnected apps — project tracking, requirements, estimation, delivery, code review, and sales — into one place.
 

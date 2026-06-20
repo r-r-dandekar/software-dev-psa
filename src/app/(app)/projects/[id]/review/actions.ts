@@ -16,7 +16,7 @@ export async function reviewPrAction(formData: FormData) {
     errorMsg = "Enter a valid PR number";
   } else {
     try {
-      const artifact = await reviewPullRequest(projectId, prNumber, profile.id);
+      const { artifact } = await reviewPullRequest(projectId, prNumber, profile.id);
       target = `/projects/${projectId}/review/${artifact.id}`;
     } catch (e) {
       errorMsg = (e as Error).message;

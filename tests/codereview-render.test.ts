@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   countsBySeverity,
   buildReviewContent,
+  buildReviewComment,
+  buildReviewPayload,
   type CodeReviewResult,
 } from "@/lib/codereview/render";
 
@@ -32,6 +34,33 @@ describe("code review render", () => {
     expect(content.sections[1].body).toContain("SQL injection");
     expect(content.data?.prNumber).toBe(42);
     expect((content.data?.findings as unknown[]).length).toBe(3);
+  });
+
+  it("formats a PR comment with verdict, counts and findings", () => {
+    const c = buildReviewComment(result, 7);
+    expect(c).toContain("ABC Code Review — PR #7");
+    expect(c).toContain("Request changes");
+    expect(c).toContain("Blocking 2");
+    expect(c).toContain("`a.ts:10`");
+  });
+
+  it("buildReviewPayload: anchors line findings inline, folds line-less into summary", () => {
+    const payload = buildReviewPayload(result, 7);
+    expect(payload.event).toBe("REQUEST_CHANGES");
+    // a.ts line 10 and c.ts line 3 are anchored
+    expect(payload.inlineComments).toHaveLength(2);
+    expect(payload.inlineComments[0]).toMatchObject({ path: "a.ts", line: 10 });
+    expect(payload.inlineComments[1]).toMatchObject({ path: "c.ts", line: 3 });
+    // b.ts (null line) ends up in the summary body
+    expect(payload.summaryBody).toContain("b.ts");
+    expect(payload.summaryBody).toContain("ABC Code Review — PR #7");
+  });
+
+  it("buildReviewPayload: approve verdict becomes COMMENT event (never auto-approve)", () => {
+    const clean: CodeReviewResult = { verdict: "approve", summary: "LGTM", findings: [] };
+    const payload = buildReviewPayload(clean, 1);
+    expect(payload.event).toBe("COMMENT");
+    expect(payload.inlineComments).toHaveLength(0);
   });
 
   it("handles a clean review", () => {

@@ -20,21 +20,36 @@ const schema = z.object({
   ),
 });
 
-const SYSTEM = `You are a senior code reviewer at ABC Solutions, a software agency with high standards for TypeScript quality, security, and performance. Review the pull request diff across these dimensions: bugs (blocking), security (blocking), performance (suggestion), standards (suggestion), test coverage (suggestion). For each issue give file, line (or null), severity (blocking/suggestion/nitpick), dimension, a concise message, and an optional concrete fix. Then give an overall verdict (approve if no blocking issues, else request_changes) and a one-paragraph summary. Be precise; do not invent issues.`;
+const ALL_DIMENSIONS = ["bug", "security", "performance", "standards", "tests"] as const;
+
+function buildSystem(enabledDimensions: string[]): string {
+  const dims = ALL_DIMENSIONS.filter((d) => enabledDimensions.includes(d));
+  const descriptions: Record<string, string> = {
+    bug: "bugs (blocking)",
+    security: "security (blocking)",
+    performance: "performance (suggestion)",
+    standards: "standards (suggestion)",
+    tests: "test coverage (suggestion)",
+  };
+  const dimList = dims.map((d) => descriptions[d]).join(", ");
+  return `You are a senior code reviewer at ABC Solutions, a software agency with high standards for TypeScript quality, security, and performance. Review the pull request diff across these dimensions: ${dimList}. For each issue give file, line (or null), severity (blocking/suggestion/nitpick), dimension, a concise message, and an optional concrete fix. Then give an overall verdict (approve if no blocking issues, else request_changes) and a one-paragraph summary. Be precise; do not invent issues.`;
+}
 
 export async function generateReview(input: {
   prTitle: string;
   prBody: string;
   diff: string;
   techStack: string | null;
+  enabledDimensions?: string[];
 }): Promise<CodeReviewResult> {
   const diff =
     input.diff.length > MAX_DIFF_CHARS
       ? `${input.diff.slice(0, MAX_DIFF_CHARS)}\n…(diff truncated)`
       : input.diff;
 
+  const enabledDimensions = input.enabledDimensions ?? [...ALL_DIMENSIONS];
   const result = await completeStructured({
-    system: SYSTEM,
+    system: buildSystem(enabledDimensions),
     prompt: [
       input.techStack ? `Tech stack: ${input.techStack}` : null,
       `PR title: ${input.prTitle}`,

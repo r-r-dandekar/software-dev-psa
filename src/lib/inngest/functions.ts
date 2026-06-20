@@ -5,6 +5,7 @@ import { reindexAll } from "@/lib/kb/index-service";
 import { syncProject } from "@/lib/delivery/sync";
 import { computeRisk, RISK_THRESHOLD } from "@/lib/delivery/risk";
 import { generateStatusReport } from "@/lib/reports/service";
+import { reviewAndComment } from "@/lib/codereview/service";
 import { notifyUsers } from "@/lib/notifications/repo";
 import { emitEvent } from "@/lib/events/bus";
 
@@ -118,9 +119,23 @@ export const weeklyKnowledgeGapDigest = inngest.createFunction(
     })
 );
 
+/** Event-driven: auto-review a PR when the GitHub webhook fires (D13). */
+export const reviewPrOnWebhook = inngest.createFunction(
+  { id: "github-pr-review", triggers: [{ event: "github/pr.opened" }] },
+  async ({ event }) => {
+    const { owner, repo, number } = event.data as {
+      owner: string;
+      repo: string;
+      number: number;
+    };
+    return runWithDb(createAdminClient(), () => reviewAndComment(owner, repo, number));
+  }
+);
+
 export const functions = [
   nightlyReindex,
   dailyDeliverySync,
   weeklyStatusReports,
   weeklyKnowledgeGapDigest,
+  reviewPrOnWebhook,
 ];

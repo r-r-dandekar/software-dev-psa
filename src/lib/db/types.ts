@@ -169,6 +169,14 @@ export type ReportSettings = {
   updated_at: string;
 };
 
+export type CodeReviewSettings = {
+  project_id: string;
+  enabled_dimensions: string[];
+  skip_paths: string[];
+  created_at: string;
+  updated_at: string;
+};
+
 export type KbQuery = {
   id: string;
   user_id: string | null;
